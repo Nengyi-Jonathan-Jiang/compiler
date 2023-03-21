@@ -3,4 +3,4 @@ project(compiler)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(compiler main.cpp vm.h)
+add_executable(compiler main.cpp vm.h assembler.h)
