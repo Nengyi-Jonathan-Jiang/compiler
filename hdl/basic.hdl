@@ -1,0 +1,62 @@
+chip NOT {
+    input x;
+    output out;
+
+    part NAND (x, 1) (out);
+}
+
+chip AND {
+    input x, y;
+    output out;
+    internal a;
+
+    part NAND (x, y) (a);
+    part NOT (a) (out);
+}
+
+chip OR {
+    input x, y;
+    output out;
+    internal notx, noty;
+
+    part NOT (x) (notx);
+    part NOT (y) (noty);
+
+    part NAND (notx, noty) (out);
+}
+
+chip XOR {
+    input x, y;
+    output out;
+    internal notx, noty, w1, w2;
+
+    part NOT (x) (notx);
+    part NOT (y) (noty);
+
+    part NAND (x, noty) (w1);
+    part NAND (notx, y) (w2);
+
+    part NAND (w1, w2) (out);
+}
+
+chip MUX2 {
+    input x1, x2, m;
+    output out;
+    internal m1, m2;
+
+    part NAND (x1, m) (m1);
+    part NAND (x2, m) (m2);
+
+    part NAND (m1, m2) (out);
+}
+
+chip MUX4 {
+    input x1, x2, x3, x4, m1, m2;
+    output out;
+    internal n12, n34;
+
+    part MUX2 (x1, x2, m) (n12);
+    part MUX2 (x3, x4, m) (n34);
+
+    part MUX2 (n12, n34, m2) (out);
+}

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <array>
 #include <vector>
 
@@ -20,7 +22,7 @@ const size_t word_size = sizeof(word) * 8;
 #define ALU_OP_DIV      0x7000u     // divide
 
 // This bit specifies whether to use A or M as the second argument (D is the first argument to operations)
-#define ALU_INPUT_BIT       0x0800u     // if this bit is set, we use M instead as A for the second input
+#define ALU_INPUT_BIT   0x0800u     // if this bit is set, we use M instead as A for the second input
 
 // These 5 bits specify certain ways to transform the inputs and output to allow more operations
 #define ALU_ZX_BIT      0x0400u     // zero 1st input (before negation)
@@ -30,7 +32,6 @@ const size_t word_size = sizeof(word) * 8;
 #define ALU_NO_BIT      0x0040u     // negate output
 
 // These 3 bits specify the destination (output registers) of the computation
-#define ALU_DEST_BITS   0x0038u
 #define ALU_DEST_D_BIT  0x0020u     // output to D register
 #define ALU_DEST_A_BIT  0x0010u     // output to A register
 #define ALU_DEST_M_BIT  0x0008u     // output to M register
@@ -97,6 +98,10 @@ private:
 
 
 
+/*
+ * HDL Specs:
+ *
+ */
 class ALU {
 public:
     /// \param D: A reference to the D register
