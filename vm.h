@@ -13,7 +13,7 @@ const size_t instruction_size = 2;  // Instructions are 2 words in size
 // These 3 bits specifies what operation to do
 #define ALU_OP_BITS     0x7000u
 // 3 bits = 8 opcodes
-#define OP_C_STORE      0x0000u     // special - we store the next word as a constant
+#define ALU_OP_CONST    0x0000u     // special - we store the next word as a constant
 #define ALU_OP_ADD      0x1000u     // addition
 #define ALU_OP_OR       0x2000u     // binary or
 #define ALU_OP_XOR      0x3000u     // binary or
@@ -26,26 +26,33 @@ const size_t instruction_size = 2;  // Instructions are 2 words in size
 #define ALU_D_MEM_BIT   0x0800u     // This bit specifies whether to treat the dest register as a memory location
 #define ALU_D_BITS      0x0700u     // These 3 bits specify the destination (output register) of the computation
 
-// These 5 bits specify certain ways to transform the inputs and output to allow more operations.
-// By convention, the store instruction should not set any of them
-#define ALU_ZX_BIT      0x0080u     // zero 1st input (before negation)
-#define ALU_NX_BIT      0x0040u     // negate all of 1st input
-#define ALU_ZY_BIT      0x0020u     // zero 2nd input (before negation)
-#define ALU_NY_BIT      0x0010u     // negate all of 2nd input
-#define ALU_NO_BIT      0x0008u     // negate output
-
 // These 3 bits specify the jump behavior for the result of the computation
 // By convention, if store instruction wish to jump, all bits should be set
-#define ALU_JMP_N      0x0004u     // jump if less than 0
-#define ALU_JMP_Z      0x0002u     // jump if equal to 0
-#define ALU_JMP_P      0x0001u     // jump if greater than 0
+// Jump will use the first register (register zero) as the instruction address
+#define ALU_JMP_N       0x0040u     // jump if less than 0
+#define ALU_JMP_Z       0x0020u     // jump if equal to 0
+#define ALU_JMP_P       0x0010u     // jump if greater than 0
 
-// These
+#define ALU_JMP_BITS    0x0007u     // These 3 bits specify the register from which the jump destination is read
+
+// ALU only parameters
+
+// These eight bits are used to specify inputs for the ALU instruction
+// By convention, the store instruction should not set any of them
 // Note: only one input can be treated as a memory location at a time because RAM can only be accessed once per cycle
-#define ALU_X_MEM_BIT       0x8000u     // This bit specifies whether to treat 1st input as a memory location
-#define ALU_X_BITS          0x7000u     // These 3 bits specify 1st input register of the computation
-#define ALU_Y_MEM_BIT       0x0800u     // This bit specifies whether to treat 2nd input as a memory location
-#define ALU_Y_BITS          0x0700u     // These 3 bits specify 1nd input register of the computation
+#define ALU_X_MEM_BIT   0x8000u     // This bit specifies whether to treat 1st input as a memory location
+#define ALU_X_BITS      0x7000u     // These 3 bits specify 1st input register of the computation
+#define ALU_Y_MEM_BIT   0x0800u     // This bit specifies whether to treat 2nd input as a memory location
+#define ALU_Y_BITS      0x0700u     // These 3 bits specify 1nd input register of the computation
+
+// These 5 bits specify certain ways to transform the inputs and output to allow more operations.
+#define ALU_ZX_BIT      0x8000u     // zero 1st input (before negation)
+#define ALU_NX_BIT      0x4000u     // negate all of 1st input
+#define ALU_ZY_BIT      0x2000u     // zero 2nd input (before negation)
+#define ALU_NY_BIT      0x1000u     // negate all of 2nd input
+#define ALU_NO_BIT      0x0800u     // negate output
+
+// Last 3 bits not used
 
 // Sample operations
 
@@ -102,28 +109,36 @@ private:
     static word garbage;
 };
 
+class CPU {
+    std::array<word, 8> registers;
 
+    // special registers
+    word instruction_ptr;
 
-/*
- * HDL Specs:
- *
- */
-class ALU {
-public:
-    /// \param D: A reference to the D register
-    /// \param A: A reference to the A register
-    /// \param M: A reference to the M memory location
-    /// \return Whether to jump
-    bool execute_arithmetic(word instruction, word& D, word& A, word& M){ // NOLINT(readability-convert-member-functions-to-static)
+    // Components
+    RAM ram;
+    ROM program_memory;
+
+    void execute () {
+        // fetch the current instruction from program memory
+        const word instruction = program_memory[instruction_ptr];
+        const word instruction_payload = program_memory[instruction_ptr + 1];
+        // next instruction pointer. If no jump, this is just the current instruction pointer + 1
+        word next_instruction_ptr = instruction_ptr + 2;
+
+        const word opcode = instruction & ALU_OP_BITS;
+
         // Read inputs
-        word  i1 = D
-            , i2 = instruction & ALU_INPUT_BITS ? M : A;
+        word& r1 = registers[(info & ALU_X_BITS) >> 12],
+                r2 = registers[(info & ALU_Y_BITS) >> 12];
+        word i1 = info & ALU_X_MEM_BIT ? ram[r1] : r1,
+                i2 = info & ALU_Y_MEM_BIT ? ram[r2] : r2;
 
         // transform inputs
-        if(instruction & ALU_ZX_BIT) i1 = 0;
-        if(instruction & ALU_ZY_BIT) i2 = 0;
-        if(instruction & ALU_NX_BIT) i1 = ~i1;
-        if(instruction & ALU_NY_BIT) i2 = ~i2;
+        if(info & ALU_ZX_BIT) i1 = 0;
+        if(info & ALU_ZY_BIT) i2 = 0;
+        if(info & ALU_NX_BIT) i1 = ~i1;
+        if(info & ALU_NY_BIT) i2 = ~i2;
 
         // execute instruction
         word output;
@@ -157,55 +172,13 @@ public:
         if(instruction & ALU_NO_BIT) output = ~output;
 
         // write to destination
-        if(instruction & ALU_DEST_D_BIT) D = output;
-        if(instruction & ALU_DEST_A_BIT) A = output;
-        if(instruction & ALU_DEST_M_BIT) M = output;
+        word& dest = registers[(instruction & ALU_D_BITS) >> 12];
+        (instruction & ALU_D_MEM_BIT ? ram[r1] : dest) = output;
 
         // Jump
-        return output > 0 && (instruction & ALU_JMP_P)
-            || output < 0 && (instruction & ALU_JMP_N)
-            || output == 0 && (instruction & ALU_JMP_Z);
-    }
-};
-
-class CPU {
-    word registers[8];
-
-    // special registers
-    word instruction_ptr;
-
-    // Components
-    RAM ram;
-    ALU alu;
-
-    ROM program_memory;
-
-    void execute () {
-        // fetch the current instruction from program memory
-        word instruction = program_memory[instruction_ptr];
-
-        // next instruction pointer. If no jump, this is just the current instruction pointer + 1
-        word next_instruction_ptr = instruction_ptr + 1;
-
-        // first bit of instruction indicates whether is alu command or mem command
-        if(instruction & OP_BIT) {
-            // This is an ALU command
-
-            // M is at RAM[A]
-            word& memory_M = ram[register_A];
-
-            // execute the instruction
-            bool do_jump = alu.execute_arithmetic(instruction, register_D, register_A, memory_M);
-
-            // jump if needed
-            if(do_jump) next_instruction_ptr = register_A;
-        }
-        // otherwise
-        else {
-            // put the remaining bits in the A register
-            // don't need to bit mask because first bit is zero anyways
-            register_A = instruction;
-        }
+        return output > 0 && (instruction & ALU_JMP_P) ||
+               output < 0 && (instruction & ALU_JMP_N) ||
+               output == 0 && (instruction & ALU_JMP_Z);
 
         // update instruction pointer
         instruction_ptr = next_instruction_ptr;
