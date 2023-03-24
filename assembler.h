@@ -7,6 +7,7 @@ class Assembler {
 public:
     enum opcodes {
         // MOV D    -> 0b1 010 0 00100
+        // MOV A    -> 0b1 010 0 00100
         MOV,
         // INC D x  -> 0b1 110 x 00000 <dest> <jmp>
         INC,
@@ -24,15 +25,23 @@ public:
         MUL,
         // DIV D x  -> 0b1 111 x 00000 <dest> <jmp>
         DIV,
-        JMP,
+        // NOT D    -> 0b1 010 0 01100 <dest> <jmp>
+        // NOT A    -> 0b1 010 0 10010 <dest> <jmp>
+        // NOT M    -> 0b1 010 1 10010 <dest> <jmp>
         NOT,
+        // OR D x  -> 0b1 010 x 00000 <dest> <jmp>
         OR,
+        // AND D x  -> 0b1 010 x 00000 <dest> <jmp>
         AND,
         XOR,
         ROL,
         ROR,
         RAL,
         RAR,
+        // LOAD <ptr> -> 0b0 <ptr>
+        LOAD,
+        // STO <ptr>   -> 0b0 <ptr>
+        STO,
     };
 
     enum Register {

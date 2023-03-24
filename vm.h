@@ -3,43 +3,49 @@
 #include <array>
 #include <vector>
 
-// A 'byte' on the virtual computer is 16 bits
+// A 'byte' on the virtual computer is 32 bits
 typedef unsigned short word;
-const size_t word_size = sizeof(word) * 8;
+const size_t word_size = sizeof(word) * 8;  // Words
+const size_t instruction_size = 2;  // Instructions are 2 words in size
 
-// If this bit is set, do a C-instruction
-#define OP_BIT          0x8000u
+// First bit is not used
 
 // These 3 bits specifies what operation to do
 #define ALU_OP_BITS     0x7000u
 // 3 bits = 8 opcodes
+#define OP_C_STORE      0x0000u     // special - we store the next word as a constant
 #define ALU_OP_ADD      0x1000u     // addition
 #define ALU_OP_OR       0x2000u     // binary or
-#define ALU_OP_XOR      0x3000u     // binary xor
-#define ALU_OP_SL       0x4000u     // left shift
-#define ALU_OP_SR       0x5000u     // right shift
+#define ALU_OP_XOR      0x3000u     // binary or
+#define ALU_OP_SHL      0x4000u     // left shift
+#define ALU_OP_SHR      0x5000u     // right shift
 #define ALU_OP_MUL      0x6000u     // multiply
 #define ALU_OP_DIV      0x7000u     // divide
 
-// This bit specifies whether to use A or M as the second argument (D is the first argument to operations)
-#define ALU_INPUT_BIT   0x0800u     // if this bit is set, we use M instead as A for the second input
+// These four bits specify the destination of the operation
+#define ALU_D_MEM_BIT   0x0800u     // This bit specifies whether to treat the dest register as a memory location
+#define ALU_D_BITS      0x0700u     // These 3 bits specify the destination (output register) of the computation
 
-// These 5 bits specify certain ways to transform the inputs and output to allow more operations
-#define ALU_ZX_BIT      0x0400u     // zero 1st input (before negation)
-#define ALU_NX_BIT      0x0200u     // negate all of 1st input
-#define ALU_ZY_BIT      0x0100u     // zero 2nd input (before negation)
-#define ALU_NY_BIT      0x0080u     // negate all of 2nd input
-#define ALU_NO_BIT      0x0040u     // negate output
-
-// These 3 bits specify the destination (output registers) of the computation
-#define ALU_DEST_D_BIT  0x0020u     // output to D register
-#define ALU_DEST_A_BIT  0x0010u     // output to A register
-#define ALU_DEST_M_BIT  0x0008u     // output to M register
+// These 5 bits specify certain ways to transform the inputs and output to allow more operations.
+// By convention, the store instruction should not set any of them
+#define ALU_ZX_BIT      0x0080u     // zero 1st input (before negation)
+#define ALU_NX_BIT      0x0040u     // negate all of 1st input
+#define ALU_ZY_BIT      0x0020u     // zero 2nd input (before negation)
+#define ALU_NY_BIT      0x0010u     // negate all of 2nd input
+#define ALU_NO_BIT      0x0008u     // negate output
 
 // These 3 bits specify the jump behavior for the result of the computation
+// By convention, if store instruction wish to jump, all bits should be set
 #define ALU_JMP_N      0x0004u     // jump if less than 0
 #define ALU_JMP_Z      0x0002u     // jump if equal to 0
 #define ALU_JMP_P      0x0001u     // jump if greater than 0
+
+// These
+// Note: only one input can be treated as a memory location at a time because RAM can only be accessed once per cycle
+#define ALU_X_MEM_BIT       0x8000u     // This bit specifies whether to treat 1st input as a memory location
+#define ALU_X_BITS          0x7000u     // These 3 bits specify 1st input register of the computation
+#define ALU_Y_MEM_BIT       0x0800u     // This bit specifies whether to treat 2nd input as a memory location
+#define ALU_Y_BITS          0x0700u     // These 3 bits specify 1nd input register of the computation
 
 // Sample operations
 
@@ -111,7 +117,7 @@ public:
     bool execute_arithmetic(word instruction, word& D, word& A, word& M){ // NOLINT(readability-convert-member-functions-to-static)
         // Read inputs
         word  i1 = D
-            , i2 = instruction & ALU_INPUT_BIT ? M : A;
+            , i2 = instruction & ALU_INPUT_BITS ? M : A;
 
         // transform inputs
         if(instruction & ALU_ZX_BIT) i1 = 0;
@@ -131,10 +137,10 @@ public:
             case ALU_OP_XOR:
                 output = i1 ^ i2;
                 break;
-            case ALU_OP_SL:
+            case ALU_OP_SHL:
                 output = i2 >= 0 ? i1 << i2 : i1 >> -i2;
                 break;
-            case ALU_OP_SR:
+            case ALU_OP_SHR:
                 output = i2 >= 0 ? i1 >> i2 : i1 << -i2;
                 break;
             case ALU_OP_MUL:
@@ -163,9 +169,7 @@ public:
 };
 
 class CPU {
-    // registers
-    word register_D;
-    word register_A;
+    word registers[8];
 
     // special registers
     word instruction_ptr;
