@@ -33,6 +33,7 @@ const size_t instruction_size = 2;  // Instructions are 2 words in size
 #define ALU_JMP_Z       0x0020u     // jump if equal to 0
 #define ALU_JMP_P       0x0010u     // jump if greater than 0
 
+#define ALU_JMP_MEM_BIT 0x0008u     // Whether to interpret the jump register as a memory location
 #define ALU_JMP_BITS    0x0007u     // These 3 bits specify the register from which the jump destination is read
 
 // ALU only parameters
@@ -87,11 +88,11 @@ struct RAM {
 };
 
 struct ROM {
-    static void write(word instruction, ROM& rom) {
-        rom.memory.push_back(instruction);
+    static void write(word data, ROM& rom) {
+        rom.memory.push_back(data);
     }
 
-    static void clear_memory(ROM& rom) {
+    static void clear(ROM& rom) {
         rom.memory.clear();
     }
 
@@ -110,7 +111,8 @@ private:
 };
 
 class CPU {
-    std::array<word, 8> registers;
+    word garbage;
+    std::array<word, 7> registers;
 
     // special registers
     word instruction_ptr;
@@ -119,30 +121,52 @@ class CPU {
     RAM ram;
     ROM program_memory;
 
-    void execute () {
+    word& access_register (word register_number, bool use_mem) {
+        if(register_number == 0) return garbage;
+        word& dest_reg = registers[register_number - 1];
+        return use_mem ? ram[dest_reg] : dest_reg;
+    }
+
+    void run_fetch_execute_cycle () {
         // fetch the current instruction from program memory
         const word instruction = program_memory[instruction_ptr];
         const word instruction_payload = program_memory[instruction_ptr + 1];
-        // next instruction pointer. If no jump, this is just the current instruction pointer + 1
-        word next_instruction_ptr = instruction_ptr + 2;
 
+        // next instruction pointer. If no jump, this is just the current instruction pointer + 1
+        instruction_ptr += 2;
+
+        // Get the opcode
         const word opcode = instruction & ALU_OP_BITS;
 
+        // Find the destination register
+        word& dest = access_register((instruction & ALU_D_BITS) >> 8, instruction & ALU_D_MEM_BIT);
+
+        // run_fetch_execute_cycle instruction
+        dest = opcode == ALU_OP_CONST
+               ? instruction_payload
+               : execute_alu_instruction(opcode, instruction_payload);
+
+        // jump if necessary
+        if (dest >  0 && (instruction & ALU_JMP_P) ||
+            dest <  0 && (instruction & ALU_JMP_N) ||
+            dest == 0 && (instruction & ALU_JMP_Z)
+                ) instruction_ptr = access_register((instruction & ALU_JMP_BITS), instruction & ALU_JMP_MEM_BIT);
+    }
+
+    word execute_alu_instruction (word opcode, word payload) {
         // Read inputs
-        word& r1 = registers[(info & ALU_X_BITS) >> 12],
-                r2 = registers[(info & ALU_Y_BITS) >> 12];
-        word i1 = info & ALU_X_MEM_BIT ? ram[r1] : r1,
-                i2 = info & ALU_Y_MEM_BIT ? ram[r2] : r2;
+        word i1 = access_register((payload & ALU_X_BITS) >> 12, payload & ALU_X_MEM_BIT),
+                i2 = access_register((payload & ALU_Y_BITS) >> 8, payload & ALU_Y_MEM_BIT);
 
         // transform inputs
-        if(info & ALU_ZX_BIT) i1 = 0;
-        if(info & ALU_ZY_BIT) i2 = 0;
-        if(info & ALU_NX_BIT) i1 = ~i1;
-        if(info & ALU_NY_BIT) i2 = ~i2;
+        if(payload & ALU_ZX_BIT) i1 = 0;
+        if(payload & ALU_ZY_BIT) i2 = 0;
+        if(payload & ALU_NX_BIT) i1 = ~i1;
+        if(payload & ALU_NY_BIT) i2 = ~i2;
 
-        // execute instruction
+        // run_fetch_execute_cycle instruction
         word output;
-        switch(instruction & ALU_OP_BITS){
+        switch(opcode) {
             case ALU_OP_ADD:
                 output = i1 + i2;
                 break;
@@ -169,18 +193,16 @@ class CPU {
         }
 
         // transform output
-        if(instruction & ALU_NO_BIT) output = ~output;
+        if(payload & ALU_NO_BIT) output = ~output;
 
-        // write to destination
-        word& dest = registers[(instruction & ALU_D_BITS) >> 12];
-        (instruction & ALU_D_MEM_BIT ? ram[r1] : dest) = output;
+        return output;
+    }
 
-        // Jump
-        return output > 0 && (instruction & ALU_JMP_P) ||
-               output < 0 && (instruction & ALU_JMP_N) ||
-               output == 0 && (instruction & ALU_JMP_Z);
-
-        // update instruction pointer
-        instruction_ptr = next_instruction_ptr;
+public:
+    void execute (ROM program) {
+        instruction_ptr = 0;
+        while(!program.isGarbage(program[instruction_ptr])){
+            run_fetch_execute_cycle();
+        }
     }
 };
