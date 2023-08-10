@@ -1,0 +1,24 @@
+language-file   := symbol-table-spec lexer-spec parser-spec
+
+AMOUNT          := __number__
+SYMBOL_ID       := "$" __number__ | "$$"
+LEXER_STATE  := "#" __number__ | "#i" | "#f"
+PARSER_STATE := "%" __number__ | "%i" | "%f"
+STRING          := __string__
+
+symbol-table-spec       := "symbol-table" "{" symbol-declaration* "}"
+symbol-declaration      := SYMBOL_ID "=" STRING
+
+lexer-spec              := "lexer" "{" lexer-initial lexer-state* "}"
+lexer-initial           := "initial" "=" LEXER_STATE
+lexer-state             := "state" LEXER_STATE ("accepts" SYMBOL_ID)? "{" lexer-transition* "}"
+lexer-transition        := STRING "->" "state" LEXER_STATE
+
+lexer-spec              := "parser" "{" parser-initial parser-state* "}"
+lexer-initial           := "initial" "=" PARSER_STATE
+lexer-state             := "state" PARSER_STATE "{" parser-entry* "}"
+parser-entry            := parser-accept | parser-goto | parser-reduce | parser-shift
+parser-accept           := "accept" SYMBOL_ID
+parser-shift            := SYMBOL_ID -> "shift" PARSER_STATE
+parser-reduce           := SYMBOL_ID -> "reduce" AMOUNT "to" SYMBOL
+parser-goto             := SYMBOL_ID -> "goto" PARSER_STATE

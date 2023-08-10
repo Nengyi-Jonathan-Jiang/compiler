@@ -1,0 +1,35 @@
+symbol-table {
+    $0 = 'string'
+    $1 = 'int'
+    $2 = 'separator'
+    $3 = 'a'
+    $4 = 'b'
+}
+lexer {
+    initial = #0
+    state #0 accepts $2 {
+        'bcd' -> state #2
+        '$6' -> state #3
+    }
+    state #1 accepts $0 {
+        'bce' -> state #2
+        'ghi' -> state #3
+    }
+    state #2 accepts $1 {
+         'b' -> state #2
+         'g' -> state #0
+    }
+    state s3 {
+         'g' -> state #1
+    }
+}
+parser {
+    initial = %0
+    state %0 {
+        accept $1
+        on $0 shift $1
+        on $2 reduce %1, $3
+        on $3 goto %6
+    }
+
+}

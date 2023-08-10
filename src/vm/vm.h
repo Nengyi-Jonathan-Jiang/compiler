@@ -6,14 +6,14 @@
 // A 'byte' on the virtual computer is 32 bits
 typedef unsigned short word;
 const size_t word_size = sizeof(word) * 8;  // Words
-const size_t instruction_size = 2;  // Instructions are 2 words in size
+const size_t instruction_size = 2;  // Instructions are 2 words in next_id
 
 // First bit is not used
 
 // These 3 bits specifies what operation to do
 #define ALU_OP_BITS     0x7000u
 // 3 bits = 8 opcodes
-#define ALU_OP_CONST    0x0000u     // special - we store the next word as a constant
+#define ALU_OP_CONST    0x0000u     // special - we store the try_get_next word as a constant
 #define ALU_OP_ADD      0x1000u     // addition
 #define ALU_OP_OR       0x2000u     // binary or
 #define ALU_OP_XOR      0x3000u     // binary or
@@ -40,24 +40,24 @@ const size_t instruction_size = 2;  // Instructions are 2 words in size
 
 // These eight bits are used to specify inputs for the ALU instruction
 // By convention, the store instruction should not set any of them
-// Note: only one input can be treated as a memory location at a time because RAM can only be accessed once per cycle
-#define ALU_X_MEM_BIT   0x8000u     // This bit specifies whether to treat 1st input as a memory location
-#define ALU_X_BITS      0x7000u     // These 3 bits specify 1st input register of the computation
-#define ALU_Y_MEM_BIT   0x0800u     // This bit specifies whether to treat 2nd input as a memory location
-#define ALU_Y_BITS      0x0700u     // These 3 bits specify 1nd input register of the computation
+// Note: only one parts can be treated as a memory location at a time because RAM can only be accessed once per cycle
+#define ALU_X_MEM_BIT   0x8000u     // This bit specifies whether to treat 1st parts as a memory location
+#define ALU_X_BITS      0x7000u     // These 3 bits specify 1st parts register of the computation
+#define ALU_Y_MEM_BIT   0x0800u     // This bit specifies whether to treat 2nd parts as a memory location
+#define ALU_Y_BITS      0x0700u     // These 3 bits specify 1nd parts register of the computation
 
 // These 5 bits specify certain ways to transform the inputs and output to allow more operations.
-#define ALU_ZX_BIT      0x8000u     // zero 1st input (before negation)
-#define ALU_NX_BIT      0x4000u     // negate all of 1st input
-#define ALU_ZY_BIT      0x2000u     // zero 2nd input (before negation)
-#define ALU_NY_BIT      0x1000u     // negate all of 2nd input
+#define ALU_ZX_BIT      0x8000u     // zero 1st parts (before negation)
+#define ALU_NX_BIT      0x4000u     // negate all of 1st parts
+#define ALU_ZY_BIT      0x2000u     // zero 2nd parts (before negation)
+#define ALU_NY_BIT      0x1000u     // negate all of 2nd parts
 #define ALU_NO_BIT      0x0800u     // negate output
 
 // Last 3 bits not used
 
 // Sample operations
 
-// Using OR op
+// Using ALTERNATION op
 
 // or  :  To do i1 | i2, no extra bits to set       (bitwise or)
 // and :  To do i1 & i2, set N1, N2, NO bits        (bitwise and)
@@ -111,15 +111,15 @@ private:
 };
 
 class CPU {
-    word garbage;
-    std::array<word, 7> registers;
+    word garbage {};
+    std::array<word, 7> registers {};
 
     // special registers
-    word instruction_ptr;
+    word instruction_ptr {};
 
     // Components
-    RAM ram;
-    ROM program_memory;
+    RAM ram {};
+    ROM program_memory {};
 
     word& access_register (word register_number, bool use_mem) {
         if(register_number == 0) return garbage;
@@ -132,7 +132,7 @@ class CPU {
         const word instruction = program_memory[instruction_ptr];
         const word instruction_payload = program_memory[instruction_ptr + 1];
 
-        // next instruction pointer. If no jump, this is just the current instruction pointer + 1
+        // try_get_next instruction pointer. If no jump, this is just the current instruction pointer + 1
         instruction_ptr += 2;
 
         // Get the opcode
