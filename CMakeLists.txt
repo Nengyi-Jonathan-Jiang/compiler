@@ -27,7 +27,5 @@ add_executable(compiler
         src/common/algorithms.h
         src/frontend/lexer/fsm/FSM.cpp
         src/frontend/lexer/lexer.cpp
-        src/frontend/lexer/lexer.cpp
         src/frontend/common/token.cpp
-        src/compile_lexer.cpp
         src/compile_lexer.cpp)
