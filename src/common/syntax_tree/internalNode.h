@@ -11,7 +11,7 @@
 namespace syntax_tree {
     template<typename T, typename U>
     struct __baseInternalNode : public virtual syntax_tree::__baseTreeNode<T> {
-        typedef std::vector<U> children_t;
+        using children_t = std::vector<U>;
         children_t children;
 
         explicit __baseInternalNode(T type, children_t children) : syntax_tree::__baseTreeNode<T>(type),
@@ -36,7 +36,7 @@ namespace syntax_tree {
 
     template<typename T>
     struct _ASTInternalNode : public __baseInternalNode<T, ASTNode<T>>, public _ASTNode<T> {
-        typedef __baseInternalNode<T, ASTNode<T>>::children_t children_t;
+        using children_t = typename __baseInternalNode<T, ASTNode<T>>::children_t;
 
         _ASTInternalNode(T type, const children_t &children) : __baseTreeNode<T>(type),
                                                                __baseInternalNode<T, ASTNode<T>>(type, children),
@@ -47,7 +47,7 @@ namespace syntax_tree {
 
     template<typename T>
     struct _ParseTreeInternalNode : public __baseInternalNode<T, ParseTreeNode<T>>, public _ParseTreeNode<T> {
-        typedef __baseInternalNode<T, ParseTreeNode<T>>::children_t children_t;
+        using children_t = typename __baseInternalNode<T, ParseTreeNode<T>>::children_t;
 
         _ParseTreeInternalNode(T type, const children_t &children) : __baseTreeNode<T>(type),
                                                                      __baseInternalNode<T, ParseTreeNode<T>>(children),

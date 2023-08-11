@@ -3,37 +3,34 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <functional>
 
-#include "lexerBuilder.h"
-#include "../../frontend/common/token.h"
+#include "../common/token.h"
 
-#include "fsm/DFA.h"
 #include "../../common/symbol.h"
+#include "../../common/algorithms.h"
 #include "fsm/FSM.h"
-#include "fsm/NFA.h"
+#include "fsm/DFA.h"
 #include "fsm/regexParser.h"
 #include "fsm/NFABuilder.h"
-#include "../../common/algorithms.h"
 
 namespace lexer {
     struct lex;
-    class lexerBuilder;
     struct lexRule;
 
     class lexer {
     private:
-        DFA dfa;
+        impl_::DFA dfa;
 
-        lexer(DFA dfa) : dfa(std::move(dfa)) {}
-
-        friend class lexerBuilder;
+        lexer(impl_::DFA dfa) : dfa(std::move(dfa)) {}
         friend class lex;
 
     public:
         lex lex(std::string text);
         std::vector<token> lex_all(std::string text);
 
-        static lexer compile(const std::vector<lexRule>& rules);
+        [[nodiscard]] static lexer load(impl_::DFA::table_t transitions, impl_::DFA::accept_table_t accepts);
+        [[nodiscard]] static lexer compile(const std::vector<lexRule>& rules);
     };
 
     struct lex {
@@ -55,4 +52,3 @@ namespace lexer {
         lexRule(symbol s, std::string regex) : sym(std::move(s)), regex(std::move(regex)) {}
     };
 }
-

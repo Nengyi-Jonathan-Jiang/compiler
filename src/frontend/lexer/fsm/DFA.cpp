@@ -2,7 +2,7 @@
 #include "DFA.h"
 #include "FSM.h"
 
-void DFA::print_self() const {
+void lexer::impl_::DFA::print_self() const {
     std::set<state_t> all_states;
     std::set<char> all_chars;
     for (const auto &[state, transitions]: table) {
@@ -51,7 +51,7 @@ void DFA::print_self() const {
     std::cout << '\n';
 }
 
-std::pair<FSM::state_t, symbol> DFA::operator()(FSM::state_t t, char c) {
+std::pair<lexer::impl_::FSM::state_t, symbol> lexer::impl_::DFA::operator()(FSM::state_t t, char c) {
     if (!table[t].contains(c)) {
         return make_pair(ERROR_STATE, symbol{});
     }

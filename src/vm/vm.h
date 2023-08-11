@@ -4,7 +4,7 @@
 #include <vector>
 
 // A 'byte' on the virtual computer is 32 bits
-typedef unsigned short word;
+using word = unsigned short;
 const size_t word_size = sizeof(word) * 8;  // Words
 const size_t instruction_size = 2;  // Instructions are 2 words in next_id
 

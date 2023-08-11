@@ -1,4 +1,9 @@
 #include "lexer.h"
+#include "fsm/DFA.h"
+#include "fsm/FSM.h"
+#include "fsm/NFA.h"
+#include "fsm/NFABuilder.h"
+#include "fsm/regexParser.h"
 
 #include <utility>
 #include <iostream>
@@ -6,6 +11,8 @@
 lexer::lex::lex(struct lexer &lexer, std::string text) : lexer(lexer), text(std::move(text)) {}
 
 std::optional<token> lexer::lex::try_get_next() {
+    using impl_::FSM;
+
     if (position == text.size()) {
         return {token::create_end_token(text.size())};
     }
@@ -64,15 +71,15 @@ std::vector<token> lexer::lexer::lex_all(std::string text) {
 }
 
 namespace {
-    using state_t = FSM::state_t;
-    using table_t = NFA::table_t;
-    using entry_t = NFA::entry_t;
+    using state_t = lexer::impl_::FSM::state_t;
+    using table_t = lexer::impl_::NFA::table_t;
+    using entry_t = lexer::impl_::NFA::entry_t;
 
     struct DFA_state_info {
-        std::set<FSM::state_t> nfa_states;
+        std::set<lexer::impl_::FSM::state_t> nfa_states;
         symbol accepted_symbol;
 
-        DFA_state_info(const std::set<FSM::state_t> &states, symbol &accepts)
+        DFA_state_info(const std::set<lexer::impl_::FSM::state_t> &states, symbol &accepts)
                 : nfa_states(states), accepted_symbol(accepts) {}
 
         std::strong_ordering operator<=>(const DFA_state_info &other) const {
@@ -80,7 +87,7 @@ namespace {
         }
     };
 
-    struct multi_accept_NFA : public NFA {
+    struct multi_accept_NFA : public lexer::impl_::NFA {
 
         std::map<state_t, symbol> accepting_states;
 
@@ -90,7 +97,7 @@ namespace {
 
     class NFAtoDFAConverter {
         multi_accept_NFA merged;
-        DFA result;
+        lexer::impl_::DFA result;
         state_t next_dfa_state{1};
         std::map<state_t, DFA_state_info> state_info;
         std::map<DFA_state_info, state_t> corresponding_state;
@@ -156,7 +163,7 @@ namespace {
         }
 
     public:
-        static DFA convert(const multi_accept_NFA &merged) {
+        static lexer::impl_::DFA convert(const multi_accept_NFA &merged) {
             NFAtoDFAConverter convertor{merged};
             convertor.convert();
             return convertor.result;
@@ -183,12 +190,12 @@ namespace {
             }
         }
 
-        NFA::table_t new_table{{mapped_end, {}}};
+        lexer::impl_::NFA::table_t new_table{{mapped_end, {}}};
         for (auto [state, transitions]: table) {
-            NFA::entry_t new_transitions;
+            lexer::impl_::NFA::entry_t new_transitions;
             for (auto [c, targets]: transitions) {
-                std::set<FSM::state_t> new_targets;
-                for (const FSM::state_t target: targets) {
+                std::set<lexer::impl_::FSM::state_t> new_targets;
+                for (const lexer::impl_::FSM::state_t target: targets) {
                     new_targets.emplace(mapped_states[target]);
                 }
 
@@ -205,11 +212,11 @@ lexer::lexer lexer::lexer::compile(const std::vector<lexRule> &rules) {
 
     multi_accept_NFA merged{{},
                             {}};
-    FSM::state_t new_state_counter = 1;
+    impl_::FSM::state_t new_state_counter = 1;
 
     for (const auto &rule: rules) {
-        auto parsed = RegexParser::parse(rule.regex);
-        const NFA nfa = NFABuilder::NFAFromRegexParse(parsed);
+        auto parsed = impl_::RegexParser::parse(rule.regex);
+        const impl_::NFA nfa = impl_::NFABuilder::NFAFromRegexParse(parsed);
 
         auto [table, mapped_start, mapped_end] = remap_states(nfa.table, new_state_counter);
 
@@ -218,7 +225,11 @@ lexer::lexer lexer::lexer::compile(const std::vector<lexRule> &rules) {
         merged.accepting_states.emplace(mapped_end, rule.sym);
     }
 
-    const DFA dfa = NFAtoDFAConverter::convert(merged);
+    const impl_::DFA dfa = NFAtoDFAConverter::convert(merged);
 
     return {dfa};
+}
+
+lexer::lexer lexer::lexer::load(impl_::DFA::table_t transitions, impl_::DFA::accept_table_t accepts) {
+    return {{std::move(transitions), std::move(accepts)}};
 }

@@ -66,17 +66,17 @@ template <class T> class list {
     T* contents;
 
 public:
-    typedef T value_type;
-    typedef value_type& reference;
-    typedef const value_type& const_reference;
-    typedef std::size_t difference_type;
-    typedef std::size_t size_type;
-    typedef value_type* pointer;
-    typedef value_type const* const_pointer;
+    using value_type = T;
+    using reference = value_type &;
+    using const_reference = const value_type &;
+    using difference_type = std::size_t;
+    using size_type = std::size_t;
+    using pointer = value_type *;
+    using const_pointer = const value_type *;
 
     class iterator {
     public:
-        typedef std::random_access_iterator_tag iterator_category;
+        using iterator_category = std::random_access_iterator_tag;
 
         explicit iterator(T* ptr) : ptr(ptr) {}
         iterator(const iterator& it) : ptr(it.ptr) {}
@@ -110,7 +110,7 @@ public:
 
     class const_iterator {
     public:
-        typedef std::random_access_iterator_tag iterator_category;
+        using iterator_category = std::random_access_iterator_tag;
 
         explicit const_iterator (T* ptr) : ptr(ptr) {}
         const_iterator (const const_iterator& it) : ptr(it.ptr) {}
@@ -141,8 +141,8 @@ public:
         const_pointer ptr;
     };
 
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     list() : N(0), ptr(nullptr) {}
     explicit list(int size) : N(size), ptr(new T[size]) {}

@@ -1,14 +1,15 @@
 #include "NFA.h"
+#include "FSM.h"
 #include <iostream>
 
-using state_t = FSM::state_t;
+using state_t = lexer::impl_::FSM::state_t;
 
-NFA::state_t NFA::nextUnusedState() {
+lexer::impl_::NFA::state_t lexer::impl_::NFA::nextUnusedState() {
     static NFA::state_t next = 2;
     return next++;
 }
 
-void NFA::print_self() const {
+void lexer::impl_::NFA::print_self() const {
     std::set<state_t> all_states;
     std::set<char> all_chars;
     for (const auto &[state, transitions]: table) {

@@ -20,9 +20,6 @@ add_executable(compiler
         src/frontend/lexer/fsm/NFABuilder.h
         src/frontend/lexer/fsm/NFA.cpp
         src/frontend/lexer/fsm/NFA.h
-        src/frontend/lexer/lexerBuilder.cpp
-        src/frontend/lexer/lexerBuilder.h
-        src/frontend/lexer/lexerBuilder.cpp
         src/frontend/lexer/fsm/FSM.h
         src/frontend/language/language.cpp
         src/frontend/language/language.h
@@ -31,4 +28,6 @@ add_executable(compiler
         src/frontend/lexer/fsm/FSM.cpp
         src/frontend/lexer/lexer.cpp
         src/frontend/lexer/lexer.cpp
-        src/frontend/common/token.cpp)
+        src/frontend/common/token.cpp
+        src/compile_lexer.cpp
+        src/compile_lexer.cpp)

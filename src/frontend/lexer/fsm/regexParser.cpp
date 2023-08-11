@@ -1,30 +1,31 @@
 #include "regexParser.h"
 #include "FSM.h"
+#include "DFA.h"
 
-bool RegexParser::hasOperatorsLeft() {
+bool lexer::impl_::RegexParser::hasOperatorsLeft() {
     return !operator_stack.empty();
 }
 
-RegexParser::node_t RegexParser::stackPop() {
+lexer::impl_::RegexParser::node_t lexer::impl_::RegexParser::stackPop() {
     auto res = stack.top();
     stack.pop();
     return res;
 }
 
-regexOperatorType RegexParser::operatorStackPeek() {
+lexer::impl_::regexOperatorType lexer::impl_::RegexParser::operatorStackPeek() {
     return operator_stack.top();
 }
 
-RegexParser::node_t RegexParser::append_element(const RegexParser::node_t &x, const RegexParser::node_t &y) {
+lexer::impl_::RegexParser::node_t lexer::impl_::RegexParser::append_element(const lexer::impl_::RegexParser::node_t &x, const lexer::impl_::RegexParser::node_t &y) {
     tree_t::castToInternalNode(x)->add_child(y);
     return x;
 }
 
-void RegexParser::chars(const std::set<char> &chars) {
+void lexer::impl_::RegexParser::chars(const std::set<char> &chars) {
     stack.push(tree_t::createLeafNode(regexNodeType::CHARS, chars));
 }
 
-void RegexParser::concat() {
+void lexer::impl_::RegexParser::concat() {
     while (hasOperatorsLeft() && operatorStackPeek() == regexOperatorType::STRING) {
         node_t x2 = stackPop();
         node_t x1 = stackPop();
@@ -34,7 +35,7 @@ void RegexParser::concat() {
     operator_stack.push(regexOperatorType::STRING);
 }
 
-void RegexParser::alternation() {
+void lexer::impl_::RegexParser::alternation() {
     while (hasOperatorsLeft() && operatorStackPeek() != regexOperatorType::PAREN) {
         node_t x2 = stackPop();
         node_t x1 = stackPop();
@@ -54,12 +55,12 @@ void RegexParser::alternation() {
     stack.push(tree_t::createInternalNode(regexNodeType::STRING, {}));
 }
 
-void RegexParser::begin_group() {
+void lexer::impl_::RegexParser::begin_group() {
     operator_stack.push(regexOperatorType::PAREN);
     stack.push(tree_t::createInternalNode(regexNodeType::STRING, {}));
 }
 
-void RegexParser::end_group() {
+void lexer::impl_::RegexParser::end_group() {
     for (regexOperatorType t; (t = operatorStackPop()) != regexOperatorType::PAREN;) {
         node_t x2 = stackPop();
         node_t x1 = stackPop();
@@ -77,15 +78,15 @@ void RegexParser::end_group() {
     }
 }
 
-void RegexParser::apply(regexNodeType op) {
+void lexer::impl_::RegexParser::apply(regexNodeType op) {
     stack.push(tree_t::createInternalNode(op, {stackPop()}));
 }
 
-syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::result() {
+syntax_tree::AbstractSyntaxTree<lexer::impl_::regexNodeType> lexer::impl_::RegexParser::result() {
     return syntax_tree::AbstractSyntaxTree<regexNodeType>{stack.top()};
 }
 
-syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::string &regex) {
+syntax_tree::AbstractSyntaxTree<lexer::impl_::regexNodeType> lexer::impl_::RegexParser::parse(const std::string &regex) {
     RegexParser reParser;
 
     reParser.begin_group();
@@ -109,7 +110,7 @@ syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::str
                 reParser.apply(regexNodeType::OPTION);
                 break;
             case '.':
-                reParser.chars(DFA::all_chars);
+                reParser.chars(lexer::impl_::DFA::all_chars);
                 break;
             case '[': {
                 reParser.concat();
@@ -117,14 +118,14 @@ syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::str
                 std::set<char> chars;
                 if (regex[i + 1] == '^') {
                     conjugate = true;
-                    chars = FSM::all_chars;
+                    chars = lexer::impl_::FSM::all_chars;
                     i++;
                 }
                 while ((c = regex[++i]) != ']') {
                     if (c == '\\') {
                         switch (regex[++i]) {
                             case 'w':
-                                for (const char ch: FSM::word_chars) {
+                                for (const char ch: lexer::impl_::FSM::word_chars) {
                                     if (conjugate) {
                                         chars.erase(ch);
                                     } else {
@@ -133,7 +134,7 @@ syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::str
                                 }
                                 break;
                             case 'l':
-                                for (const char ch: FSM::letters) {
+                                for (const char ch: lexer::impl_::FSM::letters) {
                                     if (conjugate) {
                                         chars.erase(ch);
                                     } else {
@@ -142,7 +143,7 @@ syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::str
                                 }
                                 break;
                             case 'd':
-                                for (const char ch: FSM::digits) {
+                                for (const char ch: lexer::impl_::FSM::digits) {
                                     if (conjugate) {
                                         chars.erase(ch);
                                     } else {
@@ -174,15 +175,15 @@ syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::str
                 switch(c){
                     case 'w':
                         reParser.concat();
-                        reParser.chars(FSM::word_chars);
+                        reParser.chars(lexer::impl_::FSM::word_chars);
                         break;
                     case 'l':
                         reParser.concat();
-                        reParser.chars(FSM::letters);
+                        reParser.chars(lexer::impl_::FSM::letters);
                         break;
                     case 'd':
                         reParser.concat();
-                        reParser.chars(FSM::digits);
+                        reParser.chars(lexer::impl_::FSM::digits);
                         break;
                     default:
                         reParser.concat();
@@ -199,31 +200,31 @@ syntax_tree::AbstractSyntaxTree<regexNodeType> RegexParser::parse(const std::str
     return reParser.result();
 }
 
-regexOperatorType RegexParser::operatorStackPop() {
+lexer::impl_::regexOperatorType lexer::impl_::RegexParser::operatorStackPop() {
     auto res = operator_stack.top();
     operator_stack.pop();
     return res;
 }
 
-std::ostream &operator<<(std::ostream &os, regexNodeType t) {
+std::ostream &operator<<(std::ostream &os, lexer::impl_::regexNodeType t) {
     switch (t) {
-        case regexNodeType::CHARS:
+        case lexer::impl_::regexNodeType::CHARS:
             return os << "chars";
-        case regexNodeType::ALTERNATION:
+        case lexer::impl_::regexNodeType::ALTERNATION:
             return os << "<|>";
-        case regexNodeType::STAR:
+        case lexer::impl_::regexNodeType::STAR:
             return os << "<*>";
-        case regexNodeType::OPTION:
+        case lexer::impl_::regexNodeType::OPTION:
             return os << "<?>";
-        case regexNodeType::STRING:
+        case lexer::impl_::regexNodeType::STRING:
             return os << "<#>";
     }
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, RegexParser::node_t node) {
+std::ostream &operator<<(std::ostream &os, lexer::impl_::RegexParser::node_t node) {
     int indent_level = 0;
-    std::stack<RegexParser::node_t> stk;
+    std::stack<lexer::impl_::RegexParser::node_t> stk;
     stk.push(node);
 
     while (!stk.empty()) {
@@ -241,13 +242,13 @@ std::ostream &operator<<(std::ostream &os, RegexParser::node_t node) {
         os << n->type;
 
         if (n->isLeaf()) {
-            RegexParser::leaf_node_t leaf = RegexParser::tree_t::castToLeafNode(n);
+            lexer::impl_::RegexParser::leaf_node_t leaf = lexer::impl_::RegexParser::tree_t::castToLeafNode(n);
 
             auto s = leaf->get_value<std::set<char>>();
 
             os << "[" << std::string{s.begin(), s.end()} << "]" << "\n";
         } else {
-            RegexParser::internal_node_t as_internal = RegexParser::tree_t::castToInternalNode(n);
+            lexer::impl_::RegexParser::internal_node_t as_internal = lexer::impl_::RegexParser::tree_t::castToInternalNode(n);
             os << " {\n";
             stk.push({});
             typeof(stk) reverse;

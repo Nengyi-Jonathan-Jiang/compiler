@@ -3,7 +3,9 @@
 #include "NFA.h"
 #include "regexParser.h"
 
-class NFABuilder {
-public:
-    static NFA NFAFromRegexParse(const syntax_tree::AbstractSyntaxTree<regexNodeType>& parsedRegex);
-};
+namespace lexer::impl_ {
+    class NFABuilder {
+    public:
+        static NFA NFAFromRegexParse(const syntax_tree::AbstractSyntaxTree<regexNodeType>& parsedRegex);
+    };
+}
