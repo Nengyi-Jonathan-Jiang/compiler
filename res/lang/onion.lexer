@@ -1,0 +1,20 @@
+symbols {
+    CUSTOM-OPERATOR COMMENT STRING-LITERAL INT-LITERAL FLOAT-LITERAL BOOL-LITERAL
+    IDENTIFIER
+
+    const decl impl class func var if else do while for break continue return goto
+    public private protected static println print input inputln read dealloc alloc
+    as [ ] ( ) { \} ; , . <: :> = == != < > <= >= ~ ! + += ++ - -= -- * *= / /= %
+    %= ^ ^= | |= & &= >> >>= << <<= -> <- <=> <-> @ # ? : null ::
+
+    CUSTOM-OPERATOR
+}
+rules {
+    COMMENT := //[^\n]*|/\*([^*]|\*[^/])*\*?\*/
+    CUSTOM-OPERATOR := <[\l_][\l_*]>
+    STRING_LITERAL := "[^"\\\n]*(\\.[^"\\\n]*)*"
+    INT_LITERAL := 0|-?[1-9]\d*
+    FLOAT_LITERAL := (0|-?[1-9]\d*)(\.\d*)|\.\d\d*
+    BOOL_LITERAL := true|false
+    IDENTIFIER := [\l_]\w*
+}

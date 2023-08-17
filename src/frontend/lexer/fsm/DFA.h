@@ -3,7 +3,7 @@
 #include <map>
 #include <set>
 #include <utility>
-#include "../../../util.h"
+#include "../../../util/util.h"
 #include "FSM.h"
 #include "../../../common/symbol.h"
 

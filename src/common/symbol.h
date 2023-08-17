@@ -12,10 +12,8 @@ struct symbol_ {
     }
 
     symbol_(std::string name, int id) : name(std::move(name)), id(id) {};
+
+    static const std::shared_ptr<symbol_> START, END;
 };
 
 using symbol = std::shared_ptr<symbol_>;
-
-//std::strong_ordering operator<=>(const symbol& a, const symbol& b){
-//    return a->id <=> b->id;
-//}

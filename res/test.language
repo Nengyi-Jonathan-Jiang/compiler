@@ -1,9 +1,9 @@
 symbol-table {
-    $0 = 'string'
-    $1 = 'int'
-    $2 = 'separator'
-    $3 = 'a'
-    $4 = 'b'
+    'string'
+    'int'
+    'separator'
+    'a'
+    'b'
 }
 lexer {
     state #i accepts $2 {

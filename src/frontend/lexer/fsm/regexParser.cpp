@@ -151,6 +151,20 @@ syntax_tree::AbstractSyntaxTree<lexer::impl_::regexNodeType> lexer::impl_::Regex
                                     }
                                 }
                                 break;
+                            case 'n':
+                                if (conjugate) {
+                                    chars.erase('\n');
+                                } else {
+                                    chars.emplace('\n');
+                                }
+                                break;
+                            case 't':
+                                if (conjugate) {
+                                    chars.erase('\t');
+                                } else {
+                                    chars.emplace('\t');
+                                }
+                                break;
                             default:
                                 if (conjugate) {
                                     chars.erase(regex[i]);
@@ -184,6 +198,14 @@ syntax_tree::AbstractSyntaxTree<lexer::impl_::regexNodeType> lexer::impl_::Regex
                     case 'd':
                         reParser.concat();
                         reParser.chars(lexer::impl_::FSM::digits);
+                        break;
+                    case 'n':
+                        reParser.concat();
+                        reParser.chars({'\n'});
+                        break;
+                    case 't':
+                        reParser.concat();
+                        reParser.chars({'\t'});
                         break;
                     default:
                         reParser.concat();

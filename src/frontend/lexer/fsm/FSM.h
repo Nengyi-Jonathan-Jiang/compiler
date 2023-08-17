@@ -3,7 +3,7 @@
 #include <map>
 #include <set>
 #include <memory>
-#include "../../../util.h"
+#include "../../../util/util.h"
 
 namespace lexer::impl_ {
     class FSM {

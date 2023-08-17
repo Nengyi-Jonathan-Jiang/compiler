@@ -3,7 +3,7 @@
 #include <map>
 #include <set>
 #include <stack>
-#include "../../../util.h"
+#include "../../../util/util.h"
 #include "../../../common/syntax_tree.h"
 #include "DFA.h"
 
