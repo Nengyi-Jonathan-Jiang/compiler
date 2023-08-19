@@ -29,5 +29,9 @@ public:
     bool operator-=(symbolString sym);
     bool operator-=(std::initializer_list<symbol> sym);
 
+    std::strong_ordering operator<=>(const symbolSet& other) const {
+        return symbols <=> other.symbols;
+    }
+
     [[nodiscard]] bool contains(const symbol &sym) const;
 };

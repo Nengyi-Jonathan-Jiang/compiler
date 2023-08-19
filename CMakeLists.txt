@@ -46,6 +46,14 @@ add_executable(compiler
         src/util/const_ptr.h
         src/frontend/parser/grammar/GrammarBuilder.cpp
         src/frontend/parser/grammar/GrammarBuilder.h
-        src/common/symbol.cpp)
+        src/common/symbol.cpp
+        src/frontend/parser/parseTable/LRParseTableBuilderBase.cpp
+        src/frontend/parser/parseTable/LRParseTableBuilderBase.h
+        src/frontend/parser/parseTable/ParsingTable.cpp
+        src/frontend/parser/parseTable/ParsingTable.h
+        src/frontend/parser/parseTable/TableEntry.h
+        src/frontend/parser/parseTable/ItemSet.cpp
+        src/frontend/parser/parseTable/ItemSet.h
+)
 
 target_include_directories(compiler PRIVATE "${CMAKE_SOURCE_DIR}/src")
