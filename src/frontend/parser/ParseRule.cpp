@@ -2,19 +2,19 @@
 // Created by njona on 8/12/2023.
 //
 
-#include "parseRule.h"
+#include "ParseRule.h"
 
 #include <utility>
 
 int parseRule_::_id = 0;
 
-parseRule_::parseRule_(symbol lhs, symbolString rhs) : lhs(std::move(lhs)), rhs(std::move(rhs)), id(++_id) {}
+parseRule_::parseRule_(symbol lhs, SymbolString rhs) : lhs(std::move(lhs)), rhs(std::move(rhs)), id(++_id) {}
 
 symbol parseRule_::getLhs() const {
     return lhs;
 }
 
-const symbolString &parseRule_::getRhs() const {
+const SymbolString &parseRule_::getRhs() const {
     return rhs;
 }
 

@@ -57,7 +57,7 @@ void GrammarBuilder::createSets() {
         updated = false;
         for (const parseRule &rule: data.rules) {
             const symbol lhs = rule->getLhs();
-            const symbolString rhs = rule->getRhs();
+            const SymbolString rhs = rule->getRhs();
             for (const symbol &sym: rhs) {
                 updated |= data.firstSets[lhs] += data.firstSets[sym];
                 if (!data.nullableSet.contains(sym)) {

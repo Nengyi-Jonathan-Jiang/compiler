@@ -3,13 +3,13 @@
 #include <vector>
 
 
-#include "util/cache.h"
+#include "util/Cache.h"
 
-#include "common/symbol.h"
+#include "common/Symbol.h"
 
 #include "frontend/parser/symbolSet.h"
-#include "frontend/parser/symbolString.h"
-#include "frontend/parser/parseRule.h"
+#include "frontend/parser/SymbolString.h"
+#include "frontend/parser/ParseRule.h"
 #include "frontend/parser/grammar/Grammar.h"
 
 class GrammarBuilder {

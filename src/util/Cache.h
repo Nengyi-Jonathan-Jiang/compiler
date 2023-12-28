@@ -3,11 +3,11 @@
 #include <map>
 
 template<typename T, typename U>
-struct cache {
+struct Cache {
 private:
     std::map<T, U> map;
 public:
-    cache() = default;
+    Cache() = default;
 
     template<typename V>
     requires std::invocable<V, const T &>
@@ -21,7 +21,7 @@ public:
 template<typename T, typename U>
 template<typename V>
 requires std::invocable<V, const T &>
-const U &cache<T, U>::computeIfAbsent(T key, V func) {
+const U &Cache<T, U>::computeIfAbsent(T key, V func) {
     auto it = map.find(key);
     if (it != map.end()) {
         return it->second;
@@ -31,11 +31,11 @@ const U &cache<T, U>::computeIfAbsent(T key, V func) {
 
 
 template<typename T, typename U>
-const U &cache<T, U>::operator[](const T &key) const {
+const U &Cache<T, U>::operator[](const T &key) const {
     return map.at(key);
 }
 
 template<typename T, typename U>
-void cache<T, U>::store(T key, U value) {
+void Cache<T, U>::store(T key, U value) {
     map.emplace(std::move(key), std::move(value));
 }

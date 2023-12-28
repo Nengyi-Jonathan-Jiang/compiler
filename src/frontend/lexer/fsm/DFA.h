@@ -5,7 +5,7 @@
 #include <utility>
 #include "../../../util/util.h"
 #include "FSM.h"
-#include "../../../common/symbol.h"
+#include "../../../common/Symbol.h"
 
 namespace lexer::impl_ {
     struct DFA : public FSM {

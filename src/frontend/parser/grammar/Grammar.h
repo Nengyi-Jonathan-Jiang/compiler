@@ -2,9 +2,9 @@
 
 #include <utility>
 #include <vector>
-#include "../parseRule.h"
+#include "../ParseRule.h"
 #include "../symbolSet.h"
-#include "../../../util/cache.h"
+#include "../../../util/Cache.h"
 
 struct grammarData {
     std::vector<parseRule> rules;
@@ -19,7 +19,7 @@ struct grammarData {
 
 class Grammar {
     grammarData data;
-    cache<symbolString, symbolSet> firstCache, followCache;
+    Cache<SymbolString, symbolSet> firstCache, followCache;
 
 public:
     Grammar(grammarData data);
@@ -37,8 +37,10 @@ public:
     [[nodiscard]] const symbolSet& first(const symbol& s) const;
     [[nodiscard]] const symbolSet& follow(const symbol& s) const;
 
-    [[nodiscard]] symbolSet first(const symbolString& symbols);
-    [[nodiscard]] symbolSet follow(const symbolString &symbols);
+    [[nodiscard]] symbolSet first(const SymbolString& symbols);
+    [[nodiscard]] symbolSet follow(const SymbolString &symbols);
+
+    [[nodiscard]] const grammarData& getData() const;
 
     void print_info() const;
 };

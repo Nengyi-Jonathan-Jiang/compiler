@@ -2,8 +2,8 @@
 
 #include <string>
 #include <set>
-#include "../../common/symbol.h"
-#include "symbolString.h"
+#include "../../common/Symbol.h"
+#include "SymbolString.h"
 
 class symbolSet {
 private:
@@ -16,17 +16,17 @@ public:
 
     symbolSet(std::initializer_list<symbol> symbols);
 
-    std::set<symbol>::const_iterator begin() const;
-    std::set<symbol>::const_iterator end() const;
+    [[nodiscard]] std::set<symbol>::const_iterator begin() const;
+    [[nodiscard]] std::set<symbol>::const_iterator end() const;
 
     bool operator+=(symbol sym);
     bool operator+=(symbolSet sym);
-    bool operator+=(symbolString sym);
+    bool operator+=(SymbolString sym);
     bool operator+=(std::initializer_list<symbol> sym);
 
     bool operator-=(const symbol &sym);
     bool operator-=(symbolSet sym);
-    bool operator-=(symbolString sym);
+    bool operator-=(SymbolString sym);
     bool operator-=(std::initializer_list<symbol> sym);
 
     std::strong_ordering operator<=>(const symbolSet& other) const {

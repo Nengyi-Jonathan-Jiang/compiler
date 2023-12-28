@@ -5,13 +5,13 @@
 
 Grammar::Grammar(grammarData data) : data(std::move(data)) {}
 
-symbolSet Grammar::first(const symbolString &symbols) {
+symbolSet Grammar::first(const SymbolString &symbols) {
     // First set of empty token symbols is {epsilon}
     if (symbols.size() == 0) {
         return {nullptr};
     }
 
-    return followCache.computeIfAbsent(symbols, [this](const symbolString &s) -> symbolSet {
+    return followCache.computeIfAbsent(symbols, [this](const SymbolString &s) -> symbolSet {
         symbolSet res{first(s.first())};
 
         if (isNullable(s.first())) {
@@ -22,13 +22,13 @@ symbolSet Grammar::first(const symbolString &symbols) {
     });
 }
 
-symbolSet Grammar::follow(const symbolString &symbols) {
+symbolSet Grammar::follow(const SymbolString &symbols) {
     // Follow set of empty token symbols is {epsilon}
     if (symbols.size() == 0) {
         return {nullptr};
     }
 
-    return followCache.computeIfAbsent(symbols, [this](const symbolString &s) -> symbolSet {
+    return followCache.computeIfAbsent(symbols, [this](const SymbolString &s) -> symbolSet {
         symbolSet res{follow(s.last())};
 
         if (isNullable(s.last())) {
@@ -102,4 +102,8 @@ void Grammar::print_info() const {
         }
         std::cout << "\n";
     }
+}
+
+const grammarData &Grammar::getData() const {
+    return data;
 }

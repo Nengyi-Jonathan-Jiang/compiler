@@ -1,7 +1,8 @@
 #pragma once
 
 #include <set>
-#include "frontend/parser/parseRule.h"
+#include <utility>
+#include "frontend/parser/ParseRule.h"
 #include "frontend/parser/symbolSet.h"
 
 class Item {
@@ -11,7 +12,7 @@ public:
     int pos;
     symbolSet lookahead;
 
-    explicit Item(const parseRule &rule, int pos, symbolSet lookahead) : rule(rule), pos(pos), lookahead(lookahead) {}
+    Item(parseRule rule, int pos, symbolSet lookahead) : rule(std::move(rule)), pos(pos), lookahead(std::move(lookahead)) {}
 
     std::weak_ordering operator<=> (const Item& other) const {
         return std::tie(pos, rule, lookahead) <=> std::tie(other.pos, other.rule, lookahead);
@@ -30,9 +31,11 @@ class ItemSet {
     std::set<Item> items;
 
     ItemSet() = default;
-    ItemSet(Item item) : items{item} {}
 
     std::weak_ordering operator<=>(const ItemSet& other) const {
         return items <=> other.items;
     }
+
+public:
+    ItemSet(Item item) : items{std::move(item)} {}
 };

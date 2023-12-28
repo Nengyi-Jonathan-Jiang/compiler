@@ -7,7 +7,7 @@
 
 #include "../common/token.h"
 
-#include "../../common/symbol.h"
+#include "../../common/Symbol.h"
 #include "../../common/algorithms.h"
 #include "fsm/FSM.h"
 #include "fsm/DFA.h"
@@ -20,6 +20,7 @@ namespace lexer {
 
     class lexer {
     private:
+    public:
         impl_::DFA dfa;
 
         lexer(impl_::DFA dfa) : dfa(std::move(dfa)) {}

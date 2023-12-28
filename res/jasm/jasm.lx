@@ -1,0 +1,53 @@
+COMMENT := (% [^\n]*)
+
+mov
+cpy
+add
+sub
+mul
+div
+mod
+or
+and
+xor
+shl
+shr
+cmp
+jmp
+ucd
+eqz
+nez
+gtz
+ltz
+gez
+lez
+dsp
+inp
+new
+del
+label
+[
+]
+@
+b
+c
+i
+f
+:
+;
+
+dump
+
+print
+
+reg := r[0-7]|sp|sb
+
+iconst := (0|-?[123456789][\d]*)
+fconst := (0|-?[123456789][\d]*)(\.[\d]+)
+bconst := (true|false)
+cconst := '\\?.'
+
+string := "[^"\\]*(\\.[^"\\]*)*"
+
+label_name := [A-Z][A-Za-z0-9_]*
+

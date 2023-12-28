@@ -17,3 +17,13 @@ struct symbol_ {
 };
 
 using symbol = std::shared_ptr<symbol_>;
+
+symbol make_symbol(const std::string& name) {
+    static int id = 0;
+    return std::make_shared<symbol_>(name, id++);
+}
+
+namespace special_symbols {
+    const symbol START = make_symbol("__START__");
+    const symbol END = make_symbol("__END__");
+}

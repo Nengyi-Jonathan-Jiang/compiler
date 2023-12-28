@@ -1,15 +1,19 @@
 #pragma once
 
-#include "frontend/parser/parseRule.h"
+#include <utility>
+
+#include "frontend/parser/ParseRule.h"
 
 struct TableEntry {
-    enum class Action { SHIFT, REDUCE, ACCEPT, GOTO };
+    enum class Action: uint8_t { SHIFT, REDUCE, ACCEPT, GOTO };
     virtual Action getAction()=0;
+
+    virtual ~TableEntry()=0;
 };
 
 struct ReduceEntry : public TableEntry {
     parseRule rule;
-    ReduceEntry(parseRule rule) : rule(rule) {}
+    ReduceEntry(parseRule rule) : rule(std::move(rule)) {}
     Action getAction() final { return TableEntry::Action::REDUCE; }
 };
 

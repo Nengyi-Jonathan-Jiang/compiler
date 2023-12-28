@@ -1,19 +1,19 @@
 #pragma once
 
 #include <memory>
-#include "symbolString.h"
+#include "SymbolString.h"
 
 class parseRule_ {
     static int _id;
 
     symbol lhs;
-    symbolString rhs;
+    SymbolString rhs;
     int id;
 public:
-    parseRule_(symbol lhs, symbolString rhs);
+    parseRule_(symbol lhs, SymbolString rhs);
 
     [[nodiscard]] symbol getLhs() const;
-    [[nodiscard]] const symbolString& getRhs() const;
+    [[nodiscard]] const SymbolString& getRhs() const;
 
     [[nodiscard]] size_t getRhsSize() const;
 

@@ -1,31 +1,31 @@
-#include "symbolString.h"
+#include "SymbolString.h"
 
 #include <utility>
 
 
-symbolString::symbolString(const std::vector<symbol>& symbols) : length(symbols.size()), symbols(symbols) {}
+SymbolString::SymbolString(const std::vector<symbol>& symbols) : length(symbols.size()), symbols(symbols) {}
 
-symbolString::symbolString(std::initializer_list<symbol> symbols) :
+SymbolString::SymbolString(std::initializer_list<symbol> symbols) :
     symbols(symbols.begin(), symbols.end()),
     length(symbols.size()) {}
 
-size_t symbolString::size() const {
+size_t SymbolString::size() const {
     return length;
 }
 
-symbol symbolString::operator[](size_t i) const {
+symbol SymbolString::operator[](size_t i) const {
     return symbols[i];
 }
 
-symbol symbolString::first() const {
+symbol SymbolString::first() const {
     return length == 0 ? nullptr : symbols[0];
 }
 
-symbol symbolString::last() const {
+symbol SymbolString::last() const {
     return length == 0 ? nullptr : symbols[length - 1];
 }
 
-std::strong_ordering symbolString::operator<=>(const symbolString &other) const {
+std::strong_ordering SymbolString::operator<=>(const SymbolString &other) const {
     auto comp1 = size() <=> other.size();
     if (comp1 != std::strong_ordering::equal) {
         return comp1;
@@ -39,23 +39,23 @@ std::strong_ordering symbolString::operator<=>(const symbolString &other) const 
     return std::strong_ordering::equal;
 }
 
-symbolString symbolString::operator()(size_t start) const {
+SymbolString SymbolString::operator()(size_t start) const {
     return (*this)(start, length);
 }
 
-symbolString symbolString::operator()(size_t start, size_t end) const {
+SymbolString SymbolString::operator()(size_t start, size_t end) const {
     return {{begin() + static_cast<int>(start), begin() + static_cast<int>(end)}};
 }
 
-symbolString symbolString::operator+(const symbol& sym) const {
+SymbolString SymbolString::operator+(const symbol& sym) const {
     std::vector<symbol> x = symbols;
     x.push_back(sym);
     return {x};
 }
 
-std::vector<symbol>::const_iterator symbolString::begin() const {
+std::vector<symbol>::const_iterator SymbolString::begin() const {
     return symbols.cbegin();
 }
-std::vector<symbol>::const_iterator symbolString::end() const {
+std::vector<symbol>::const_iterator SymbolString::end() const {
     return symbols.cend();
 }

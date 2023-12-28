@@ -22,7 +22,7 @@ bool symbolSet::operator+=(symbolSet sym) {
     return res;
 }
 
-bool symbolSet::operator+=(symbolString sym) {
+bool symbolSet::operator+=(SymbolString sym) {
     bool res = false;
     for (const symbol &s: sym) {
         res |= symbols.insert(s).second;
@@ -50,7 +50,7 @@ bool symbolSet::operator-=(symbolSet sym) {
     return res;
 }
 
-bool symbolSet::operator-=(symbolString sym) {
+bool symbolSet::operator-=(SymbolString sym) {
     bool res = false;
     for (const symbol &s: sym) {
         res |= symbols.erase(s) > 0;

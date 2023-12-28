@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../util/util.h"
-#include "../../common/symbol.h"
+#include "../../common/Symbol.h"
 #include <memory>
 #include <numeric>
 #include <ranges>

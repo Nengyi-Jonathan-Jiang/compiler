@@ -2,14 +2,14 @@
 
 #include "../common/token.h"
 
-class symbolString {
+class SymbolString {
     std::vector<symbol> symbols;
     size_t length;
     std::string repr;
 
 public:
-    symbolString(const std::vector<symbol>& symbols);
-    symbolString(std::initializer_list<symbol> symbols);
+    SymbolString(const std::vector<symbol>& symbols);
+    SymbolString(std::initializer_list<symbol> symbols);
 
     [[nodiscard]] size_t size() const;
 
@@ -17,12 +17,12 @@ public:
     [[nodiscard]] symbol first() const;
     [[nodiscard]] symbol last() const;
 
-    [[nodiscard]] std::strong_ordering operator<=>(const symbolString &other) const;
+    [[nodiscard]] std::strong_ordering operator<=>(const SymbolString &other) const;
 
-    [[nodiscard]] symbolString operator()(size_t start) const;
-    [[nodiscard]] symbolString operator()(size_t start, size_t end) const;
+    [[nodiscard]] SymbolString operator()(size_t start) const;
+    [[nodiscard]] SymbolString operator()(size_t start, size_t end) const;
 
-    [[nodiscard]] symbolString operator+(const symbol& sym) const;
+    [[nodiscard]] SymbolString operator+(const symbol& sym) const;
 
     [[nodiscard]] std::vector<symbol>::const_iterator begin() const;
     [[nodiscard]] std::vector<symbol>::const_iterator end() const;

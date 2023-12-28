@@ -3,9 +3,9 @@
 #include <vector>
 #include <map>
 #include <set>
-#include "common/symbol.h"
+#include "common/Symbol.h"
 #include "TableEntry.h"
-#include "frontend/parser/parseRule.h"
+#include "frontend/parser/ParseRule.h"
 
 class ParsingTable {
 
